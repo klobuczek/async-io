@@ -2,13 +2,22 @@
 # frozen_string_literal: true
 
 $LOAD_PATH.unshift File.expand_path("../../lib", __dir__)
+$LOAD_PATH.unshift File.expand_path(__dir__)
 
 require 'async'
 require 'async/io/trap'
 require 'async/io/host_endpoint'
 require 'async/io/stream'
+require 'certificate_authority'
+
+server_context =
+  OpenSSL::SSL::SSLContext.new.tap do |context|
+    context.key = CertificateAuthority::DEFAULT.certificate_authority_key
+    context.cert = CertificateAuthority::DEFAULT
+  end
 
 endpoint = Async::IO::Endpoint.tcp('localhost', 4578)
+endpoint = Async::IO::SSLEndpoint.new(endpoint, ssl_context: server_context)
 
 interrupt = Async::IO::Trap.new(:INT)
 
@@ -18,7 +27,7 @@ Async do |top|
 	endpoint.bind do |server, task|
 		Console.logger.info(server) {"Accepting connections on #{server.local_address.inspect}"}
 		
-		task.async do |subtask|
+    Async do |subtask|
 			interrupt.wait
 			
 			Console.logger.info(server) {"Closing server socket..."}

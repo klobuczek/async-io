@@ -8,10 +8,10 @@ require 'async'
 require 'async/io/trap'
 require 'async/io/host_endpoint'
 require 'async/io/stream'
-require 'certificate_authority'
+require 'certificate'
 
 client_context = OpenSSL::SSL::SSLContext.new.tap do |context|
-  context.cert_store = CertificateAuthority::DEFAULT.certificate_store
+  context.cert_store = Certificate.new('TestCA').store
   context.verify_mode = OpenSSL::SSL::VERIFY_PEER
 end
 

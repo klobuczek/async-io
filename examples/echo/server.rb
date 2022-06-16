@@ -8,12 +8,13 @@ require 'async'
 require 'async/io/trap'
 require 'async/io/host_endpoint'
 require 'async/io/stream'
-require 'certificate_authority'
+require 'certificate'
 
+certificate = Certificate.new('Test', serial: 2, authority: Certificate.new('TestCA'))
 server_context =
   OpenSSL::SSL::SSLContext.new.tap do |context|
-    context.key = CertificateAuthority::DEFAULT.certificate_authority_key
-    context.cert = CertificateAuthority::DEFAULT
+    context.cert = certificate
+    context.key = certificate.key
   end
 
 endpoint = Async::IO::Endpoint.tcp('localhost', 4578)

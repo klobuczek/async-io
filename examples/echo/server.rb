@@ -32,8 +32,8 @@ end
 
 server_context =
   OpenSSL::SSL::SSLContext.new.tap do |context|
-    context.key = key
-    context.cert = valid_certificate
+    context.key = OpenSSL::PKey::RSA.new File.read 'key.pem'
+    context.cert = OpenSSL::X509::Certificate.new File.read 'cert.pem'
   end
 
 endpoint = Async::IO::Endpoint.tcp('localhost', 4578)
@@ -47,7 +47,7 @@ Async do |top|
 	endpoint.bind do |server, task|
 		Console.logger.info(server) {"Accepting connections on #{server.local_address.inspect}"}
 		
-    Async do |subtask|
+    	Async do |subtask|
 			interrupt.wait
 			
 			Console.logger.info(server) {"Closing server socket..."}

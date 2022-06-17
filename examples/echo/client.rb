@@ -11,7 +11,7 @@ require 'async/io/stream'
 require 'certificate_authority'
 
 client_context = OpenSSL::SSL::SSLContext.new.tap do |context|
-  context.cert_store = CertificateAuthority::DEFAULT.certificate_store
+  context.ca_file = 'ca_cert.pem'
   context.verify_mode = OpenSSL::SSL::VERIFY_PEER
 end
 

@@ -2,16 +2,15 @@
 # frozen_string_literal: true
 
 $LOAD_PATH.unshift File.expand_path("../../lib", __dir__)
-$LOAD_PATH.unshift File.expand_path(__dir__)
 
 require 'async'
 require 'async/io/trap'
 require 'async/io/host_endpoint'
 require 'async/io/stream'
-require 'certificate_authority'
+require 'async/io/ssl_endpoint'
 
 client_context = OpenSSL::SSL::SSLContext.new.tap do |context|
-  context.ca_file = 'ca_cert.pem'
+  context.ca_file = File.expand_path('ca_cert.pem', __dir__)
   context.verify_mode = OpenSSL::SSL::VERIFY_PEER
 end
 

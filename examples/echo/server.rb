@@ -16,7 +16,7 @@ server_context =
   end
 
 endpoint = Async::IO::Endpoint.tcp('localhost', 4578)
-endpoint = Async::IO::SSLEndpoint.new(endpoint, ssl_context: server_context)
+endpoint = Async::IO::SSLEndpoint.new(endpoint, ssl_context: server_context, hostname: 'localhost')
 
 interrupt = Async::IO::Trap.new(:INT)
 

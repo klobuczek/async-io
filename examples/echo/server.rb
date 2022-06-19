@@ -7,18 +7,26 @@ require 'async'
 require 'async/io/trap'
 require 'async/io/host_endpoint'
 require 'async/io/stream'
+require 'async/io/ssl_endpoint'
+
+server_context =
+  OpenSSL::SSL::SSLContext.new.tap do |context|
+    context.key = OpenSSL::PKey::RSA.new(File.read(File.expand_path('key.pem', __dir__)))
+    context.cert = OpenSSL::X509::Certificate.new(File.read(File.expand_path('cert.pem', __dir__)))
+  end
 
 endpoint = Async::IO::Endpoint.tcp('localhost', 4578)
+endpoint = Async::IO::SSLEndpoint.new(endpoint, ssl_context: server_context, hostname: 'localhost')
 
 interrupt = Async::IO::Trap.new(:INT)
 
 Async do |top|
 	interrupt.install!
 	
-	endpoint.bind do |server, task|
+	endpoint.bind do |server, task = Async::Task.current|
 		Console.logger.info(server) {"Accepting connections on #{server.local_address.inspect}"}
 		
-		task.async do |subtask|
+    task.async do |subtask|
 			interrupt.wait
 			
 			Console.logger.info(server) {"Closing server socket..."}

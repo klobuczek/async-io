@@ -24,21 +24,17 @@ module Async
 	module IO
 		class Buffer < String
 			BINARY = Encoding::BINARY
-			
-			def initialize
+
+			def initialize(capacity: nil)
 				super
-				
-				force_encoding(BINARY)
 			end
-			
+
 			def << string
 				if string.encoding == BINARY
 					super(string)
 				else
 					super(string.b)
 				end
-				
-				return self
 			end
 			
 			alias concat <<

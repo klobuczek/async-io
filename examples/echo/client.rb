@@ -50,15 +50,30 @@ def pad(arr, n)
   arr + [0] * [0, n - arr.size].max
 end
 
-
+peer = nil
+stream = nil
 Async do |task|
-	endpoint.connect do |peer|
-		stream = Async::IO::Stream.new(peer)
-
-    GOGOBOLT = ["6060B017"].pack('H*')
-    stream.write(GOGOBOLT)
-    stream.write(bolt_versions('3.5', '4.1'))
-
-    puts ruby_version(stream.read(4))
-	end
+  peer = endpoint.connect
 end
+stream = Async::IO::Stream.new(peer)
+
+# Async do |task|
+GOGOBOLT = ["6060B017"].pack('H*')
+stream.write(GOGOBOLT)
+# end
+
+puts peer
+puts stream
+# puts Async::Task.current
+
+# Async do |task|
+stream.write(bolt_versions('3.5', '4.1'))
+# end
+
+# Async do |task|
+puts ruby_version(stream.read(4))
+# end
+
+# Async do |task|
+peer.close
+# end

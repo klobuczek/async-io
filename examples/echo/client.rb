@@ -31,17 +31,49 @@ all_context = OpenSSL::SSL::SSLContext.new.tap do |context|
   context.verify_mode = OpenSSL::SSL::VERIFY_NONE
 end
 
-endpoint = Async::IO::Endpoint.tcp('localhost', 4578)
-endpoint = Async::IO::SSLEndpoint.new(endpoint, ssl_context: custom_multiple_context, hostname: 'localhost')
+endpoint = Async::IO::Endpoint.tcp('staging.orglabsolutions.com', 7687)
+endpoint = Async::IO::SSLEndpoint.new(endpoint, ssl_context: all_context, hostname: 'localhost')
 
-Async do |task|
-	endpoint.connect do |peer|
-		stream = Async::IO::Stream.new(peer)
-		
-		while true
-			task.sleep 1
-			stream.puts "Hello World!"
-			puts stream.gets.inspect
-		end
-	end
+def bolt_version(version)
+  pad(version.split(/[.\-]/).map(&:to_i), 4).reverse
 end
+
+def ruby_version(bolt_version)
+  bolt_version.unpack('C*').reverse.map(&:to_s).join('.')
+end
+
+def bolt_versions(*versions)
+  pad(versions[0..3].map(&method(:bolt_version)).flatten, 16).pack('C*')
+end
+
+def pad(arr, n)
+  arr + [0] * [0, n - arr.size].max
+end
+
+peer = nil
+stream = nil
+Async do |task|
+  peer = endpoint.connect
+end
+stream = Async::IO::Stream.new(peer)
+
+# Async do |task|
+GOGOBOLT = ["6060B017"].pack('H*')
+stream.write(GOGOBOLT)
+# end
+
+puts peer
+puts stream
+# puts Async::Task.current
+
+# Async do |task|
+stream.write(bolt_versions('3.5', '4.1'))
+# end
+
+# Async do |task|
+puts ruby_version(stream.read(4))
+# end
+
+# Async do |task|
+peer.close
+# end
